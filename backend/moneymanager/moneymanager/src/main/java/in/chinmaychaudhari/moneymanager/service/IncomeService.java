@@ -1,0 +1,92 @@
+package in.chinmaychaudhari.moneymanager.service;
+
+import in.chinmaychaudhari.moneymanager.dto.IncomeDto;
+import in.chinmaychaudhari.moneymanager.entity.CategoryEntity;
+import in.chinmaychaudhari.moneymanager.entity.IncomeEntity;
+import in.chinmaychaudhari.moneymanager.entity.ProfileEntity;
+import in.chinmaychaudhari.moneymanager.repository.CategoryRepo;
+import in.chinmaychaudhari.moneymanager.repository.InocmeRepo;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+
+@Service
+@RequiredArgsConstructor
+public class IncomeService {
+
+    private final CategoryRepo categoryRepository;
+    private final InocmeRepo incomeRepository;
+    private final ProfileService profileService;
+
+    // Adds a new expense to the database
+    public IncomeDto addIncome(IncomeDto dto) {
+        ProfileEntity profile = profileService.getCurrentProfile();
+        CategoryEntity category = categoryRepository.findById(dto.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        IncomeEntity newExpense = toEntity(dto, profile, category);
+        newExpense = incomeRepository.save(newExpense);
+        return toDTO(newExpense);
+    }
+
+    // Retrieves all incomes for current month/based on the start date and end date
+    public List<IncomeDto> getCurrentMonthIncomesForCurrentUser() {
+        ProfileEntity profile = profileService.getCurrentProfile();
+        LocalDate now = LocalDate.now();
+        LocalDate startDate = now.withDayOfMonth(1);
+        LocalDate endDate = now.withDayOfMonth(now.lengthOfMonth());
+        List<IncomeEntity> list = incomeRepository.findByProfileIdAndDateBetween(profile.getId(), startDate, endDate);
+        return list.stream().map(this::toDTO).toList();
+    }
+    public void deleteIncome(Long incomeId) {
+        ProfileEntity profile = profileService.getCurrentProfile();
+        IncomeEntity entity = incomeRepository.findById(incomeId)
+                .orElseThrow(() -> new RuntimeException("Income not found"));
+        if (entity.getProfile().getId() != (profile.getId())) {
+            throw new RuntimeException("Unauthorized to delete this income");
+        }
+        incomeRepository.delete(entity);
+    }
+
+    // Get latest 5 incomes for current user
+    public List<IncomeDto> getLatest5IncomesForCurrentUser() {
+        ProfileEntity profile = profileService.getCurrentProfile();
+        List<IncomeEntity> list = incomeRepository.findTop5ByProfileIdOrderByDateDesc(profile.getId());
+        return list.stream().map(this::toDTO).toList();
+    }
+
+    // Get total incomes for current user
+    public BigDecimal getTotalIncomeForCurrentUser() {
+        ProfileEntity profile = profileService.getCurrentProfile();
+        BigDecimal total = incomeRepository.findTotalExpenseByProfileId(profile.getId());
+        return total != null ? total: BigDecimal.ZERO;
+    }
+
+    private IncomeEntity toEntity(IncomeDto dto, ProfileEntity profile, CategoryEntity category) {
+        return IncomeEntity.builder()
+                .name(dto.getName())
+                .icon(dto.getIcon())
+                .amount(dto.getAmount())
+                .date(dto.getDate())
+                .profile(profile)
+                .category(category)
+                .build();
+    }
+
+    private IncomeDto toDTO(IncomeEntity entity) {
+        return IncomeDto.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .icon(entity.getIcon())
+                .categoryId(entity.getCategory() != null ? entity.getCategory().getId(): null)
+                .categoryName(entity.getCategory() != null ? entity.getCategory().getName(): "N/A")
+                .amount(entity.getAmount())
+                .date(entity.getDate())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
+                .build();
+    }
+}
