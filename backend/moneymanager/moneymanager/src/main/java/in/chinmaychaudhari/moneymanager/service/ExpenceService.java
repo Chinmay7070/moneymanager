@@ -77,6 +77,12 @@ public class ExpenceService {
         List<ExpenceEntity> list = expenseRepository.findByProfileIdAndDateBetweenAndNameContainingIgnoreCase(profile.getId(), startDate, endDate, keyword, sort);
         return list.stream().map(this::toDTO).toList();
     }
+
+    //Notifications
+    public List<ExpenceDto> getExpensesForUserOnDate(Long profileId, LocalDate date) {
+        List<ExpenceEntity> list = expenseRepository.findByProfileIdAndDate(profileId, date);
+        return list.stream().map(this::toDTO).toList();
+    }
     //helper methods
     private ExpenceEntity toEntity(ExpenceDto dto, ProfileEntity profile, CategoryEntity category) {
         return ExpenceEntity.builder()
