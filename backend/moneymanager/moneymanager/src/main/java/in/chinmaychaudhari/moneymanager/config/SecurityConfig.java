@@ -37,11 +37,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/v1.0/status",
-                                "/api/v1.0/health",
-                                "/api/v1.0/register",
-                                "/api/v1.0/activate",
-                                "/api/v1.0/login"
+                                "/status",
+                                "/health",
+                                "/register",
+                                "/activate",
+                                "/login"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -55,6 +55,7 @@ public class SecurityConfig {
 
         return httpSecurity.build();
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
