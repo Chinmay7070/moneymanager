@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets.js";
-import Input from "../components/Input";
+import Input from "../components/Input.jsx";
 import {validateEmail} from "../util/validation.js";
 import axiosConfig from "../util/axious.jsx";
 import { API_ENDPOINTS } from "../util/apiEndpoints.js";
@@ -48,7 +48,7 @@ const SignUp = () => {
             const response = await axiosConfig.post(API_ENDPOINTS.REGISTER, {
                 fullName,
                 email,
-                password
+                passWord :  password
             })
             if (response.status === 201) {
                 toast.success("Profile created successfully.");
@@ -127,7 +127,7 @@ const SignUp = () => {
 
                             <p className="text-sm text-slate-800 text-center mt-6">
                                 Already have an account?
-                                <Link to="/login" className="font-medium text-primary underline hover:text-primary-dark transition-colors">SignUp          </Link>
+                                <Link to="/Login" className="font-medium text-primary underline hover:text-primary-dark transition-colors">SignUp          </Link>
                             </p>
                 </form>
               </div>
