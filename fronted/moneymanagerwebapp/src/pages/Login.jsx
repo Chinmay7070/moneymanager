@@ -44,7 +44,7 @@ const Login = () =>{
             if (token) {
                 localStorage.setItem("token", token);
                 setUser(user);
-                navigate("/dashboard");
+                navigate("/Dashboard");
             }
         }catch(error) {
             if (error.response && error.response.data.message) {
